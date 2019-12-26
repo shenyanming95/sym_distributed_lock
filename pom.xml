@@ -16,7 +16,7 @@
 	<packaging>pom</packaging>
 
 	<name>分布式锁</name>
-	<description>分布式锁</description>
+	<description>实现分布式锁的几种方式</description>
 
 	<modules>
 		<module>分布式锁-redis</module>
@@ -29,9 +29,20 @@
 	</properties>
 
 	<dependencies>
+
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<artifactId>spring-boot-starter-test</artifactId>
 		</dependency>
 
 		<dependency>
@@ -47,9 +58,10 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-		</dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.0.7</version>
+        </dependency>
 	</dependencies>
 
 	<build>
