@@ -22,6 +22,7 @@
 		<module>分布式锁-redis</module>
 		<module>分布式锁-zookeeper</module>
 		<module>分布式锁-redisson</module>
+		<module>分布式锁-curator</module>
 	</modules>
 
 	<properties>
