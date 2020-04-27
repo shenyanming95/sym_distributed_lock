@@ -25,19 +25,29 @@ public abstract class AbstractMapSynchronizer implements ILock {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AbstractMapSynchronizer.class);
 
-    // 保存分布式锁的Key和对应的线程集合信息, 定义为成员变量, 让每个实例的数据都可以放到一起（分布式锁, 解锁时要释放所有...）
+    /**
+     * 保存分布式锁的Key和对应的线程集合信息, 定义为成员变量, 让每个实例的数据都可以放到一起（分布式锁, 解锁时要释放所有...）
+     */
     private final static Map<String, Set<Thread>> threadMap;
 
-    // 定时任务线程池, 用来与redis交互, 防止程序异常死锁的出现...
+    /**
+     * 定时任务线程池, 用来与redis交互, 防止程序异常死锁的出现...
+     */
     private static ScheduledExecutorService threadPool;
 
-    // 标识是否启动了定时任务, 仅仅会在真正开始使用时才启动定时任务
+    /**
+     * 标识是否启动了定时任务, 仅仅会在真正开始使用时才启动定时任务
+     */
     private static AtomicBoolean isStarted = new AtomicBoolean();
 
-    // 自定义封装, 用来操作redis的接口类
+    /**
+     * 自定义封装, 用来操作redis的接口类
+     */
     protected RedisOperations redisOperations;
 
-    // 当前实例对应的分布式锁的key
+    /**
+     * 当前实例对应的分布式锁的key
+     */
     protected String lockKey;
 
     static {
@@ -59,14 +69,12 @@ public abstract class AbstractMapSynchronizer implements ILock {
     /**
      * 尝试一次获取锁资源, 方法立即返回
      * @param lockTime 获取到锁时, 对锁的占用时间
-     * @return
      */
     protected abstract boolean tryRequire(int lockTime);
 
 
     /**
      * 尝试一次解锁, 方法立即返回
-     * @return
      */
     protected abstract boolean tryRelease();
 
@@ -120,8 +128,10 @@ public abstract class AbstractMapSynchronizer implements ILock {
     @Override
     public void lockAwait(int lockTime, long waitTime, TimeUnit timeUnit) throws InterruptedException {
         startTimeTaskIfNecessary();
-        long needTime = timeUnit.toNanos(waitTime); // 用户指定等待的时间数(纳秒)
-        long deadTime = needTime + System.nanoTime(); // 当前时间点+用户指定等待的时间数(纳秒), 表示此方法需要返回的最后时间点
+        // 用户指定等待的时间数(纳秒)
+        long needTime = timeUnit.toNanos(waitTime);
+        // 当前时间点+用户指定等待的时间数(纳秒), 表示此方法需要返回的最后时间点
+        long deadTime = needTime + System.nanoTime();
         Thread t = Thread.currentThread();
         for(;;){
             if( tryRequire(lockTime) ){

@@ -22,8 +22,9 @@ import java.util.UUID;
  * 2.如果key已经存在,使用hget命令判断hash值里面的threadId是否是当前申请解锁的线程,如果不是说明当前锁不是被该线程占用,它就没资格解锁,lua脚本返回0(表示解锁失败)
  * 3.如果hash值内的threadId是当前申请解锁的线程,将hash值内的count减1,若count不等于0,说明解锁次数仍小于加锁次数,lua脚本返回0(表示解锁失败)
  * 4.若count值减1后等于0,说明解锁次数==加锁次数,删除key,并使用publish命令发布一条删除key的消息
- * <p>
- * Created by shenym on 2019/3/25.
+ *
+ * @author shenym
+ * @date 2019/3/25
  */
 public class RedisLock extends AbstractMapSynchronizer {
 
@@ -49,17 +50,24 @@ public class RedisLock extends AbstractMapSynchronizer {
      */
     private final static String UNLOCK_SCRIPT = "if(redis.call('exists',KEYS[1]) == 1) then " + "   if(redis.call('hget',KEYS[1],KEYS[2]) == ARGV[1]) then " + "       local count = redis.call('hincrby',KEYS[1],KEYS[3],-1) " + "       if(count==0) then " + "           redis.call('del',KEYS[1]) " + "           redis.call('publish','_$redis_$lock',KEYS[1]) " + "           return 1 " + "       else return 0 end " + "   else return 0 end " + "else return 0 end";
 
-
-    /* 加锁脚本的缓存SHA */
+    /**
+     * 加锁脚本的缓存SHA
+     */
     private static String lockScript_sha;
 
-    /* 解锁脚本的缓存SHA */
+    /**
+     * 解锁脚本的缓存SHA
+     */
     private static String unlockScript_sha;
 
-    /* 标识：是否已经进行脚本缓存初始化 */
+    /**
+     * 标识：是否已经进行脚本缓存初始化
+     */
     private static volatile boolean isInit = false;
 
-    /* 表示此实例的线程ID */
+    /**
+     * 表示此实例的线程ID
+     */
     private String threadId;
 
     public RedisLock(String lockKey) {
@@ -83,8 +91,6 @@ public class RedisLock extends AbstractMapSynchronizer {
 
     /**
      * 生成当前线程的唯一标识符
-     *
-     * @return
      */
     private String getThreadId() {
         String threadId = UUID.randomUUID().toString().replace("-", "");
@@ -105,7 +111,6 @@ public class RedisLock extends AbstractMapSynchronizer {
      * 尝试一次获取锁资源, 方法立即返回
      *
      * @param lockTime 获取到锁时, 对锁的占用时间
-     * @return
      */
     @Override
     protected boolean tryRequire(int lockTime) {
@@ -131,8 +136,6 @@ public class RedisLock extends AbstractMapSynchronizer {
 
     /**
      * 尝试一次解锁, 方法立即返回
-     *
-     * @return
      */
     @Override
     protected boolean tryRelease() {
@@ -179,7 +182,9 @@ public class RedisLock extends AbstractMapSynchronizer {
         // 执行脚本
         Boolean result = redisOperations.evalSha(unlockScript_sha, 3, lockKey, "uuid", "count", threadId);
         boolean f = result == null ? false : result;
-        if (f) LOGGER.info("线程[{}]已成功解锁[{}]", Thread.currentThread().getName(), lockKey);
+        if (f) {
+            LOGGER.info("线程[{}]已成功解锁[{}]", Thread.currentThread().getName(), lockKey);
+        }
         return f;
     }
 

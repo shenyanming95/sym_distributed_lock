@@ -4,8 +4,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * 分布式锁接口
- *
- * Created by shenym on 2019/9/18.
+ * @author shenym
+ * @date 2019/9/18
  */
 public interface ILock {
 
