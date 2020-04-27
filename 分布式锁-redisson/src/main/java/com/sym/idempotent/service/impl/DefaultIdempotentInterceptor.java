@@ -1,20 +1,18 @@
-package com.sym.idempotency.service.impl;
+package com.sym.idempotent.service.impl;
 
-
-import com.sym.idempotency.Idempotency;
-import com.sym.idempotency.exception.IdempotencyException;
-import com.sym.idempotency.exception.RepeatedSubmitException;
-import com.sym.idempotency.exception.UnknownException;
-import com.sym.idempotency.service.IdempotencyService;
-import com.sym.idempotency.service.KeyGenerator;
+import com.sym.idempotent.Idempotent;
+import com.sym.idempotent.exception.InvokeException;
+import com.sym.idempotent.exception.RepeatedSubmitException;
+import com.sym.idempotent.exception.UnknownException;
+import com.sym.idempotent.service.IdempotentInterceptor;
+import com.sym.idempotent.service.KeyGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.WriteRedisConnectionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
@@ -23,40 +21,39 @@ import java.util.Map;
 /**
  * 幂等性接口实现类
  *
- * @see IdempotencyService
+ * @author shenyanming
+ * @see IdempotentInterceptor
  * @see RedissonClient
- * <p>
  * Created by shenym on 2019/10/24.
  */
-@Service("idempotencyService")
-public class IdempotencyServiceImpl implements IdempotencyService {
+@Component
+@Slf4j
+public class DefaultIdempotentInterceptor implements IdempotentInterceptor {
 
-    private final static Logger logger = LoggerFactory.getLogger(IdempotencyServiceImpl.class);
     private final static Object LOCK_OBJECT = new Object();
     private static Map<Class<? extends KeyGenerator>, KeyGenerator> keyGeneratorMap = new HashMap<>(64);
-
     private final RedissonClient redissonClient;
 
     @Autowired
-    public IdempotencyServiceImpl(RedissonClient redissonClient) {
+    public DefaultIdempotentInterceptor(RedissonClient redissonClient) {
         this.redissonClient = redissonClient;
     }
 
     @Override
-    public Object handler(ProceedingJoinPoint joinPoint, Idempotency idempotency) throws RepeatedSubmitException {
+    public Object determine(ProceedingJoinPoint joinPoint, Idempotent idempotent) throws RepeatedSubmitException {
         // 获取分布式锁的key
-        String key = this.getKey(joinPoint, idempotency);
+        String key = this.getKey(joinPoint, idempotent);
         // 获取注解的配置
-        long lockTime = idempotency.lockTime();
-        boolean allowIfDown = idempotency.allowIfDown();
-        boolean throwIfRepeat = idempotency.throwIfRepeat();
+        long lockTime = idempotent.lockTime();
+        boolean allowIfDown = idempotent.allowIfDown();
+        boolean throwIfRepeat = idempotent.throwIfRepeat();
         // 获取分布式锁对象
         RLock lock = redissonClient.getLock(key);
         try {
             boolean isGetLock;
             if (lockTime > 0) {
                 // 如果 lockTime 大于 0, 则该锁只会锁住指定的时间
-                isGetLock = lock.tryLock(0, lockTime, idempotency.timeUnit());
+                isGetLock = lock.tryLock(0, lockTime, idempotent.timeUnit());
             } else {
                 // 否则会一直锁住(Redisson默认锁住50s并且在线程运行期间有看门狗不断延长此时间), 直至方法调用完成
                 isGetLock = lock.tryLock();
@@ -78,37 +75,40 @@ public class IdempotencyServiceImpl implements IdempotencyService {
                 }
             }
         } catch (RepeatedSubmitException e) {
-            logger.warn("[幂等性接口]发生重复提交：{}", joinPoint.getSignature().toShortString());
+            log.warn("发生重复提交：{}", joinPoint.getSignature().toShortString());
             throw e;
         } catch (WriteRedisConnectionException e) {
             // redis宕机, 或者网络异常连接不上.
             if (allowIfDown) {
-                logger.warn("[幂等性接口]redis连接失败, 但允许访问幂等接口");
+                log.warn("redis连接失败, 但允许访问幂等接口");
                 return invoke(joinPoint);
             } else {
-                logger.error("[幂等性接口]redis连接失败, 原因：{}", e.getMessage());
+                log.error("redis连接失败, 原因：{}", e);
                 throw e;
             }
-        } catch (InterruptedException e) {
-            logger.error("[幂等性接口]线程被中断");
-            throw new IdempotencyException();
         } catch (Exception e) {
-            logger.error("[幂等性接口]发生未知异常, 原因：{}", e.getMessage());
-            throw new IdempotencyException();
+            log.error("发生未知异常, 原因：{}", e);
+            throw new UnknownException(e);
         }
     }
 
-    private String getKey(ProceedingJoinPoint joinPoint, Idempotency idempotency) {
-        String customizedKey = idempotency.key();
+    /**
+     * 获取key
+     */
+    private String getKey(ProceedingJoinPoint joinPoint, Idempotent idempotent) {
+        String customizedKey = idempotent.key();
         // 优先取手动设置的key
         if (!StringUtils.isEmpty(customizedKey)) {
             return customizedKey;
         }
-        Class<? extends KeyGenerator> keyGeneratorClass = idempotency.generator();
+        Class<? extends KeyGenerator> keyGeneratorClass = idempotent.generator();
         KeyGenerator keyGenerator = keyGeneratorMap.get(keyGeneratorClass);
         return null == keyGenerator ? doGetKey(joinPoint, keyGeneratorClass) : keyGenerator.generate(joinPoint);
     }
 
+    /**
+     * 生成key
+     */
     private String doGetKey(ProceedingJoinPoint joinPoint, Class<? extends KeyGenerator> keyGeneratorClass) {
         synchronized (LOCK_OBJECT) {
             KeyGenerator oldKeyGenerator = keyGeneratorMap.get(keyGeneratorClass);
@@ -119,18 +119,23 @@ public class IdempotencyServiceImpl implements IdempotencyService {
                     keyGeneratorMap.put(keyGeneratorClass, keyGenerator);
                     return newKey;
                 } catch (InstantiationException | IllegalAccessException e) {
-                    throw new UnknownException(e.getMessage());
+                    log.error("生成KeyGenerator实例失败: {}", e);
+                    throw new InvokeException(e);
                 }
             }
             return oldKeyGenerator.generate(joinPoint);
         }
     }
 
+    /**
+     * 回调目标方法
+     */
     private Object invoke(ProceedingJoinPoint joinPoint) {
         try {
             return joinPoint.proceed(joinPoint.getArgs());
         } catch (Throwable e) {
-            throw new UnknownException(e.getMessage());
+            log.error("回调目标方法失败: {}", e);
+            throw new InvokeException(e);
         }
     }
 

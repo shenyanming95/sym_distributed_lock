@@ -10,7 +10,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Created by shenym on 2019/11/23 13:36.
+ * redisson配置类, 用来注入一个{@link RedissonClient}
+ *
+ * @author shenym
+ * @date 2019/11/23 13:36
  */
 @Configuration
 public class SymRedissonConfig {

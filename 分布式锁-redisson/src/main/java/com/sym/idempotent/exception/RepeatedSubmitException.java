@@ -1,12 +1,13 @@
-package com.sym.idempotency.exception;
+package com.sym.idempotent.exception;
 
 
 /**
  * 重复提交异常
- * <p>
- * Created by shenym on 2019/10/22.
+ *
+ * @author shenym
+ * @date 2019/10/22
  */
-public class RepeatedSubmitException extends BaseException {
+public class RepeatedSubmitException extends BaseIdempotentException {
 
     public RepeatedSubmitException() {
         super();

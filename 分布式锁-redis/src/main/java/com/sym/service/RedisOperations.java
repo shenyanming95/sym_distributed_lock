@@ -3,10 +3,10 @@ package com.sym.service;
 /**
  * 定义一些需要操作redis分布式锁{@link com.sym.service.impl.RedisLock}的接口
  *
- * Created by shenym on 2019/9/18.
+ * @author shenym
+ * @date 2019/9/18
  */
 public interface RedisOperations {
-
     /**
      * 预缓存脚本信息
      * @param script lua脚本
@@ -23,13 +23,11 @@ public interface RedisOperations {
      */
     Boolean evalSha(String scriptSha, int numKeys, String... keysAndArgs);
 
-
     /**
      * 删除一个缓存键
      * @param key key值
      */
     void del(String key);
-
 
     /**
      * redis心跳检测
@@ -37,12 +35,10 @@ public interface RedisOperations {
      */
     boolean pong();
 
-
     /**
      * 获取锁的存活时间
      * @param key 锁的key
      * @return 剩余存活时间
      */
     long getExpire(String key);
-
 }

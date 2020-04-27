@@ -1,8 +1,8 @@
-package com.sym.idempotency.service.impl;
+package com.sym.idempotent.service.impl;
 
 
 import cn.hutool.crypto.SecureUtil;
-import com.sym.idempotency.service.KeyGenerator;
+import com.sym.idempotent.service.KeyGenerator;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.util.StringUtils;
@@ -12,8 +12,9 @@ import java.lang.reflect.Parameter;
 
 /**
  * 默认生成幂等性分布式锁key的实现类, 默认会以方法的参数取md5加密串
- * <p>
- * Created by shenym on 2019/12/26.
+ *
+ * @author shenym
+ * @date 2019/12/26
  */
 public class DefaultKeyGenerator implements KeyGenerator {
 
@@ -41,5 +42,4 @@ public class DefaultKeyGenerator implements KeyGenerator {
             return md5;
         }
     }
-
 }

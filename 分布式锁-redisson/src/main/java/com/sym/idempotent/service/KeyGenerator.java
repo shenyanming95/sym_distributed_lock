@@ -1,14 +1,14 @@
-package com.sym.idempotency.service;
+package com.sym.idempotent.service;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 
 /**
  * 分布式锁Key生成器
  *
- * Created by shenym on 2019/12/26.
+ * @author shenym
+ * @date 2019/12/26
  */
 public interface KeyGenerator {
-
     /**
      * 获取key
      */

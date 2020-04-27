@@ -1,20 +1,28 @@
-package com.sym.idempotency;
+package com.sym.idempotent;
 
-import com.sym.idempotency.service.KeyGenerator;
-import com.sym.idempotency.service.impl.DefaultKeyGenerator;
+import com.sym.idempotent.service.KeyGenerator;
+import com.sym.idempotent.service.impl.DefaultKeyGenerator;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 幂等性注解, 表示此接口是幂等性接口, 再调用时会校验判断
- * Created by shenym on 2019/10/22.
+ *
+ * @author shenym
+ * @date 2019/10/22
+ * @see KeyGenerator
  */
 @Documented
 @Inherited
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Idempotency {
+public @interface Idempotent {
 
     /**
      * 手动指定分布式锁的key
