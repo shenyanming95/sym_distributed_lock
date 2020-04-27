@@ -8,7 +8,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>lock-redisson</artifactId>
+    <artifactId>distributed-lock-redisson</artifactId>
     <name>分布式锁-redisson</name>
     <description>分布式锁的实现方案之一：redisson</description>
     <packaging>jar</packaging>
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
-            <version>3.10.5</version>
+            <version>3.12.0</version>
         </dependency>
     </dependencies>
 

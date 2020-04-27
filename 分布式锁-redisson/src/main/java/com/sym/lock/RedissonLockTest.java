@@ -1,5 +1,6 @@
 package com.sym.lock;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.redisson.api.RLock;
@@ -10,11 +11,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Created by shenym on 2019/11/23 13:40.
+ * {@link RedissonClient}的分布式锁运用
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)
-public class SymRedissonLock {
+@Slf4j
+public class RedissonLockTest {
 
     private final static String LOCK_PREFIX = "redisson:lock:";
 
@@ -25,7 +27,7 @@ public class SymRedissonLock {
      * 普通锁
      */
     @Test
-    public void testOne(){
+    public void testOne() {
         RLock lock = redissonClient.getLock(LOCK_PREFIX + 1);
         boolean b = lock.tryLock();
         System.out.println(b);
@@ -35,7 +37,7 @@ public class SymRedissonLock {
      * 读写锁
      */
     @Test
-    public void testTwo(){
+    public void testTwo() {
         RReadWriteLock readWriteLock = redissonClient.getReadWriteLock(LOCK_PREFIX + 2);
         RLock readLock = readWriteLock.readLock();
         RLock writeLock = readWriteLock.writeLock();
