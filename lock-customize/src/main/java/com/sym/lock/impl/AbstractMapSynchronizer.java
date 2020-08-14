@@ -1,4 +1,4 @@
-package com.sym.service;
+package com.sym.lock.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

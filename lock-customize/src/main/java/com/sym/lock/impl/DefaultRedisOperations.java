@@ -1,4 +1,4 @@
-package com.sym.service.impl;
+package com.sym.lock.impl;
 
 import com.sym.service.RedisOperations;
 import org.slf4j.Logger;

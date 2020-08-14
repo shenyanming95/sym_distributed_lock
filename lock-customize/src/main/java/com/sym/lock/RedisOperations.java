@@ -1,4 +1,4 @@
-package com.sym.service;
+package com.sym.lock;
 
 /**
  * 定义一些需要操作redis分布式锁{@link com.sym.service.impl.RedisLock}的接口

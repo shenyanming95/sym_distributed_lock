@@ -1,6 +1,5 @@
-package com.sym.service.impl;
+package com.sym.lock.impl;
 
-import com.sym.service.AbstractMapSynchronizer;
 import com.sym.service.RedisOperations;
 import com.sym.util.SpringContextUtil;
 import io.lettuce.core.RedisNoScriptException;
