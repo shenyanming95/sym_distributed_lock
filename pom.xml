@@ -19,10 +19,9 @@
 	<description>实现分布式锁的几种方式</description>
 
 	<modules>
-		<module>分布式锁-redis</module>
-		<module>分布式锁-zookeeper</module>
-		<module>分布式锁-redisson</module>
-		<module>分布式锁-curator</module>
+		<module>lock-customize</module>
+		<module>lock-curator</module>
+		<module>lock-redisson</module>
 	</modules>
 
 	<properties>
