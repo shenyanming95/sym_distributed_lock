@@ -1,0 +1,3 @@
+## 分布式锁的底层策略, redis、zookeeper
+lock:
+  strategy: redis

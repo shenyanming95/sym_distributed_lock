@@ -2,9 +2,11 @@ package com.sym.bus;
 
 import com.sym.enums.MessageTypeEnum;
 import com.sym.holder.ThreadHolder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.LockSupport;
@@ -19,6 +21,7 @@ public class MessageBus {
 
     private static BlockingQueue<Message> queue = new LinkedBlockingQueue<>();
     private static Thread thread;
+    private static ThreadHolder threadHolder = ThreadHolder.INSTANCE;
 
     private static volatile boolean isRunning = true;
     private static volatile boolean isStarted = false;
@@ -67,11 +70,13 @@ public class MessageBus {
             return;
         }
         String key = message.getDate().toString();
-        List<Thread> threads = ThreadHolder.get(key);
+        Set<Thread> threads = threadHolder.get(key);
         threads.forEach(LockSupport::unpark);
     }
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Message {
         private MessageTypeEnum typeEnum;
         private Object date;

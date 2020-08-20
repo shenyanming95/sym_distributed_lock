@@ -68,7 +68,7 @@ public class ReflectionUtil {
         // 执行排序
         list.sort(comparator);
         StringBuilder sb = new StringBuilder();
-        list.stream().map(Pair::getRight).forEach(o -> sb.append(o).append(":"));
+        list.stream().map(Pair::getRight).forEach(o -> sb.append(o).append(delimiter));
         return sb.substring(0, sb.length() - 1);
     }
 

@@ -13,7 +13,7 @@ public interface ILock {
     /**
      * 获取分布式锁, 抢夺失败会一直阻塞
      */
-    void lock();
+    void lock() throws InterruptedException;
 
     /**
      * 获取分布式锁, 不管抢锁成功与否, 都会立即返回
@@ -30,7 +30,7 @@ public interface ILock {
      *
      * @return true-抢锁成功, false-抢锁失败
      */
-    boolean tryLock(long time, TimeUnit timeUnit);
+    boolean tryLock(long time, TimeUnit timeUnit) throws InterruptedException;
 
     /**
      * 解锁

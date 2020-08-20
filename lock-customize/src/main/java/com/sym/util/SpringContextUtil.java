@@ -6,10 +6,10 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 /**
- * springBoot获取IOC容器可以实现 ApplicationContextAware 接口
+ * spring上下文工具类
  *
- * @Auther: shenym
- * @Date: 2019-03-26 10:55
+ * @author shenyanming
+ * Created on 2020/8/13 17:14
  */
 @Component
 public class SpringContextUtil implements ApplicationContextAware {

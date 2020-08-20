@@ -46,9 +46,4 @@ public @interface DistributedLock {
      * 获取锁失败的降级方法
      */
     String fallbackMethodIfLockFail() default "";
-
-    /**
-     * 加锁策略, 支持mysql, redis, zookeeper
-     */
-    LockStrategy strategy() default LockStrategy.REDIS;
 }

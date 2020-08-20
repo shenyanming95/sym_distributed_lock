@@ -2,12 +2,11 @@ package com.sym.holder;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * 全局单例, 维护了key+thread的关联关系
@@ -18,7 +17,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ThreadHolder {
 
     public final static ThreadHolder INSTANCE;
-    private final static Map<String, List<Thread>> THREAD_MAP;
+    private final static Map<String, Set<Thread>> THREAD_MAP;
 
     static {
         INSTANCE = new ThreadHolder();
@@ -33,8 +32,8 @@ public class ThreadHolder {
      * @param lockKey 分布式锁key
      * @param thread 线程
      */
-    public static void put(String lockKey, Thread thread){
-        put(lockKey, Collections.singleton(thread));
+    public boolean put(String lockKey, Thread thread){
+        return put(lockKey, Collections.singleton(thread));
     }
 
     /**
@@ -42,9 +41,9 @@ public class ThreadHolder {
      * @param lockKey 分布式锁key
      * @param threads 线程集
      */
-    public static void put(String lockKey, Collection<Thread> threads) {
-        List<Thread> threadList = THREAD_MAP.computeIfAbsent(lockKey, (key) -> new CopyOnWriteArrayList<>());
-        threadList.addAll(threads);
+    public boolean put(String lockKey, Collection<Thread> threads) {
+        Set<Thread> threadList = THREAD_MAP.computeIfAbsent(lockKey, (key) -> new CopyOnWriteArraySet<>());
+        return threadList.addAll(threads);
     }
 
     /**
@@ -52,16 +51,16 @@ public class ThreadHolder {
      * @param lockKey 分布式锁key
      * @return 线程集
      */
-    public static List<Thread> get(String lockKey){
-        List<Thread> threadList = THREAD_MAP.get(lockKey);
-        return Objects.isNull(threadList) ? Collections.emptyList() : threadList;
+    public Set<Thread> get(String lockKey){
+        Set<Thread> threadSet = THREAD_MAP.get(lockKey);
+        return Objects.isNull(threadSet) ? Collections.emptySet() : threadSet;
     }
 
     /**
      * 获取维护的所有分布式锁key
      * @return 键集合
      */
-    public static Set<String> getKeyList(){
+    public Set<String> getKeyList(){
         return THREAD_MAP.keySet();
     }
 }
